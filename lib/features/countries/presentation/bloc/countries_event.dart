@@ -23,3 +23,12 @@ class SearchCountries extends CountriesEvent {
 class RefreshCountries extends CountriesEvent {
   const RefreshCountries();
 }
+
+class ToggleFavorite extends CountriesEvent {
+  final String cca2;
+
+  const ToggleFavorite(this.cca2);
+
+  @override
+  List<Object> get props => [cca2];
+}

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../widgets/shimmer_loader.dart';
 
@@ -16,13 +15,8 @@ class CountryListShimmer extends StatelessWidget {
             horizontal: AppSizes.paddingM,
             vertical: AppSizes.paddingS,
           ),
-          decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: AppColors.border,
-                width: 0.5,
-              ),
-            ),
+          constraints: const BoxConstraints(
+            minHeight: 72,
           ),
           child: const Row(
             children: [

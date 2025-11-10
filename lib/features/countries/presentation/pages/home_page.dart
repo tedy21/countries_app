@@ -234,36 +234,46 @@ class HomePage extends StatelessWidget {
   }
 
   void _onFavoriteToggle(BuildContext context, String cca2) {
-    // TODO: Toggle favorite
+    context.read<CountriesBloc>().add(ToggleFavorite(cca2));
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      onTap: (index) {
-        if (index == 1) {
-          // TODO: Navigate to favorites page
-        }
-      },
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          activeIcon: Icon(Icons.home),
-          label: 'Home',
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: AppColors.border,
+            width: 0.5,
+          ),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_border),
-          activeIcon: Icon(Icons.favorite),
-          label: 'Favorites',
-        ),
-      ],
-      selectedItemColor: AppColors.textPrimary,
-      unselectedItemColor: AppColors.textSecondary,
-      backgroundColor: AppColors.surface,
-      elevation: 0,
-      selectedFontSize: 12,
-      unselectedFontSize: 12,
+      ),
+      child: BottomNavigationBar(
+        currentIndex: 0,
+        onTap: (index) {
+          if (index == 1) {
+            // TODO: Navigate to favorites page
+          }
+        },
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border),
+            activeIcon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+        ],
+        selectedItemColor: AppColors.textPrimary,
+        unselectedItemColor: AppColors.textSecondary,
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+      ),
     );
   }
 }

@@ -4,12 +4,13 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/number_formatter.dart';
+import '../../../../core/injection/injection_container.dart';
 import '../../../../widgets/error_view.dart';
 import '../../../../widgets/app_loader.dart';
 import '../bloc/country_detail_bloc.dart';
 import '../bloc/country_detail_event.dart';
 import '../bloc/country_detail_state.dart';
-import '../models/country_details.dart';
+import '../../domain/entities/country_details.dart';
 import '../widgets/detail_shimmer.dart';
 
 class CountryDetailPage extends StatelessWidget {
@@ -22,8 +23,10 @@ class CountryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final repository = InjectionContainer().countriesRepository;
     return BlocProvider(
-      create: (context) => CountryDetailBloc()..add(LoadCountryDetail(cca2)),
+      create: (context) => CountryDetailBloc(repository: repository)
+        ..add(LoadCountryDetail(cca2)),
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -151,7 +154,7 @@ class CountryDetailPage extends StatelessWidget {
                 : 'N/A'),
         _buildStatRow(
           AppStrings.population,
-          '${_formatPopulation(country.population)} million',
+          NumberFormatter.formatNumber(country.population),
         ),
         _buildStatRow(AppStrings.region, country.region),
         _buildStatRow(AppStrings.subregion, country.subregion),
@@ -232,10 +235,5 @@ class CountryDetailPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatPopulation(int population) {
-    final millions = population / 1000000;
-    return millions.toStringAsFixed(millions % 1 == 0 ? 0 : 2);
   }
 }

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../models/country_summary.dart';
+import '../../domain/entities/country_summary.dart';
 
 abstract class CountriesState extends Equatable {
   const CountriesState();
