@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_strings.dart';
+import 'features/countries/presentation/bloc/countries_bloc.dart';
+import 'features/countries/presentation/pages/home_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,30 +25,14 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: AppColors.background,
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.surface,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0,
         ),
       ),
-      home: const HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.appName),
-      ),
-      body: const Center(
-        child: Text(
-          'Welcome to Countries App',
-          style: TextStyle(fontSize: 24),
-        ),
+      home: BlocProvider(
+        create: (context) => CountriesBloc(),
+        child: const HomePage(),
       ),
     );
   }
