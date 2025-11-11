@@ -11,6 +11,7 @@ import '../bloc/countries_state.dart';
 import '../widgets/country_list_item.dart';
 import '../widgets/country_list_shimmer.dart';
 import 'country_detail_page.dart';
+import '../../../favorites/presentation/pages/favorites_page.dart';
 
 class _SearchTextField extends StatefulWidget {
   final String initialValue;
@@ -251,7 +252,11 @@ class HomePage extends StatelessWidget {
         currentIndex: 0,
         onTap: (index) {
           if (index == 1) {
-            // TODO: Navigate to favorites page
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const FavoritesPage(),
+              ),
+            );
           }
         },
         type: BottomNavigationBarType.fixed,
