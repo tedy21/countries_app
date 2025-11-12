@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/injection/injection_container.dart';
+import '../../../../core/constants/app_sizes.dart';
+import '../../../../core/injection/service_locator.dart';
+import '../../../countries/domain/repositories/countries_repository.dart';
+import '../../domain/repositories/favorites_repository.dart';
 import '../../../../core/widgets/theme_toggle_button.dart';
 import '../../../../widgets/error_view.dart';
 import '../../../../widgets/empty_state_widget.dart';
@@ -10,17 +13,17 @@ import '../bloc/favorites_bloc.dart';
 import '../bloc/favorites_event.dart';
 import '../bloc/favorites_state.dart';
 import '../widgets/favorite_list_item.dart';
+import '../widgets/favorite_list_shimmer.dart';
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final injectionContainer = InjectionContainer();
     return BlocProvider(
       create: (context) => FavoritesBloc(
-        favoritesRepository: injectionContainer.favoritesRepository,
-        countriesRepository: injectionContainer.countriesRepository,
+        favoritesRepository: getIt<FavoritesRepository>(),
+        countriesRepository: getIt<CountriesRepository>(),
       )..add(const LoadFavorites()),
       child: Scaffold(
         appBar: AppBar(
@@ -47,15 +50,11 @@ class FavoritesPage extends StatelessWidget {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 context.read<FavoritesBloc>().add(const LoadFavorites());
               });
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const FavoriteListShimmer();
             }
 
             if (state is FavoritesLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const FavoriteListShimmer();
             }
 
             if (state is FavoritesError) {
@@ -75,23 +74,65 @@ class FavoritesPage extends StatelessWidget {
                 );
               }
 
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<FavoritesBloc>().add(const RefreshFavorites());
-                },
-                child: ListView.separated(
-                  itemCount: state.favorites.length,
-                  separatorBuilder: (context, index) => const SizedBox.shrink(),
-                  itemBuilder: (context, index) {
-                    final country = state.favorites[index];
-                    return FavoriteListItem(
-                      country: country,
-                      onTap: () => _onCountryTap(context, country.cca2),
-                      onRemoveFavorite: () =>
-                          _onRemoveFavorite(context, country.cca2),
-                    );
-                  },
-                ),
+              return Column(
+                children: [
+                  if (state.hasPartialData)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSizes.paddingM,
+                        vertical: AppSizes.paddingS,
+                      ),
+                      color: Theme.of(context).colorScheme.errorContainer,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.wifi_off,
+                            size: 20,
+                            color:
+                                Theme.of(context).colorScheme.onErrorContainer,
+                          ),
+                          const SizedBox(width: AppSizes.spacingS),
+                          Expanded(
+                            child: Text(
+                              state.failedCount != null
+                                  ? '${state.failedCount} favorite(s) could not be loaded. Showing cached data.'
+                                  : AppStrings.favoritesPartialLoad,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onErrorContainer,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        context
+                            .read<FavoritesBloc>()
+                            .add(const RefreshFavorites());
+                      },
+                      child: ListView.separated(
+                        itemCount: state.favorites.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox.shrink(),
+                        itemBuilder: (context, index) {
+                          final country = state.favorites[index];
+                          return FavoriteListItem(
+                            country: country,
+                            onTap: () => _onCountryTap(context, country.cca2),
+                            onRemoveFavorite: () =>
+                                _onRemoveFavorite(context, country.cca2),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               );
             }
 

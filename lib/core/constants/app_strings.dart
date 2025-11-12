@@ -31,4 +31,27 @@ class AppStrings {
   static const String errorNetwork =
       'Network error. Please check your connection.';
   static const String errorUnknown = 'An unknown error occurred';
+
+  static const String errorNoInternet =
+      'No internet connection. Please check your network settings and try again.';
+  static const String errorConnectionTimeout =
+      'Connection timeout. Please check your internet connection and try again.';
+  static const String errorServerError =
+      'Server error. Please try again later.';
+  static const String errorServerNotFound =
+      'Server not found. Please check your connection and try again.';
+  static const String errorBadRequest = 'Invalid request. Please try again.';
+  static const String errorUnauthorized =
+      'Unauthorized access. Please try again.';
+  static const String errorForbidden = 'Access forbidden. Please try again.';
+  static const String errorNotFound =
+      'Requested data not found. Please try again.';
+  static const String errorInternalServer =
+      'Internal server error. Please try again later.';
+  static const String errorServiceUnavailable =
+      'Service temporarily unavailable. Please try again later.';
+  static const String errorCacheFailure =
+      'Failed to load cached data. Please check your connection.';
+  static const String favoritesPartialLoad =
+      'Some favorites could not be loaded. Showing cached data.';
 }
