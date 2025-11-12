@@ -15,62 +15,55 @@ A Flutter mobile application for browsing and learning about countries around th
 
 ## Prerequisites
 
-You'll need the following installed:
+Before starting, make sure you have these installed:
 
-- Flutter SDK (>=3.0.0): [Install Flutter](https://flutter.dev/docs/get-started/install)
-- Dart SDK (>=3.0.0): Comes with Flutter
+- Flutter SDK version 3.0.0 or higher (tested with 3.32.8)
+- Dart SDK version 3.0.0 or higher (tested with 3.8.1, comes with Flutter)
 - Android Studio or VS Code with Flutter extensions
-- Android NDK (version 27.0.12077973 or higher) for Android builds
+- Android NDK version 27.0.12077973 for Android builds
+- Java 11 or higher for Android development
+- Kotlin support for Android builds
 
 ## Setup Instructions
 
-### Clone the Repository
+Follow these steps to run the project from source code:
 
-```bash
-git clone <repository-url>
-cd countries_app
-```
+Step 1: Clone the repository
+- Open your terminal and run: git clone <repository-url>
+- Navigate to the project folder: cd countries_app
 
-### Install Dependencies
+Step 2: Verify Flutter installation
+- Run: flutter doctor
+- This checks your Flutter setup and shows any missing dependencies
+- Make sure all checks pass before continuing
 
-```bash
-flutter pub get
-```
+Step 3: Install dependencies
+- Run: flutter pub get
+- This downloads all required packages listed in pubspec.yaml
 
-### Generate Code Files
+Step 4: Generate code files
+- Run: flutter pub run build_runner build --delete-conflicting-outputs
+- This is required because the project uses code generation for data models
+- It generates the necessary .freezed.dart and .g.dart files
+- Important: You must run this before the app can compile
+- If you modify any data models later, run this command again
 
-This project uses code generation for data models. Run this command to generate the necessary files:
+Step 5: Configure Android NDK (for Android builds only)
+- The project is already configured to use NDK version 27.0.12077973
+- This is set in android/app/build.gradle.kts
+- If you get NDK errors, make sure this version matches your installed NDK
 
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
+Step 6: Run the application
+- Make sure you have a device connected or emulator running (for mobile)
+- Or have Chrome installed (for web)
+- For Android: Run flutter run
+- For iOS (macOS only): Run flutter run
+- For Web: Run flutter run -d chrome
+- Note: First run may take a few seconds as it initializes the service locator and cache
 
-### Run the Application
-
-For Android:
-```bash
-flutter run
-```
-
-For iOS (macOS only):
-```bash
-flutter run
-```
-
-For Web:
-```bash
-flutter run -d chrome
-```
-
-### Build APK (Android)
-
-To build a release APK:
-
-```bash
-flutter build apk --release
-```
-
-The APK will be located at `build/app/outputs/flutter-apk/app-release.apk`
+Step 7: Build APK for Android (optional)
+- To create a release APK: flutter build apk --release
+- The APK file will be at: build/app/outputs/flutter-apk/app-release.apk
 
 ## Environment Variables
 
@@ -78,6 +71,35 @@ No environment variables are required. The app uses the public REST Countries AP
 
 - API Base URL: `https://restcountries.com/v3.1/`
 - No API keys needed
+- No configuration files required
+
+## Special Setup Requirements
+
+Code Generation
+- This project uses Freezed and json_serializable for data models
+- You must run the code generation command before compiling
+- Generated files are not in the repository, so you need to create them
+- Run: flutter pub run build_runner build --delete-conflicting-outputs
+- Run this again if you modify files in lib/features/countries/data/models/
+- Or if you change any file with @freezed or @JsonSerializable annotations
+
+Service Locator
+- The app uses get_it for dependency injection
+- Initialization happens automatically in main.dart
+- If you see dependency errors, check that setupServiceLocator() is called in main()
+
+Cache Directory
+- The app creates a cache folder automatically on first run
+- Uses path_provider to store cached data
+- Cache persists across app restarts
+- No manual setup needed
+
+Android Requirements
+- Minimum SDK: As set by Flutter (usually 21 or higher)
+- Target SDK: As set by Flutter
+- NDK version: 27.0.12077973 (already configured)
+- Java: Version 11 or higher required
+- Kotlin: Required for Android builds
 
 ## Project Structure
 
@@ -224,6 +246,63 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ### Cache Issues
 To clear app cache, uninstall and reinstall the app, or clear app data from device settings.
 
+## Future Improvements
 
+If I had more time, here are some features and improvements I would add:
 
+Testing
+- Add comprehensive unit tests for BLoCs and business logic
+- Implement widget tests for UI components
+- Add integration tests for critical user flows
+- Set up test coverage reporting
+
+Internationalization
+- Add support for multiple languages
+- Translate all user-facing strings
+- Support for right-to-left languages
+- Localized number and date formats
+
+Enhanced Features
+- Display currencies and languages for each country
+- Add country comparison feature to compare multiple countries side by side
+- Implement search history to remember recent searches
+- Add export functionality to share favorites list
+- Create home screen widgets for quick access to favorites
+
+User Experience
+- Add pull-to-refresh on detail page
+- Implement swipe gestures for navigation
+- Add haptic feedback for interactions
+- Improve empty states with helpful suggestions
+- Add onboarding tutorial for first-time users
+
+Performance
+- Implement image caching for country flags
+- Add pagination or lazy loading for large country lists
+- Optimize list rendering with better item builders
+- Add performance monitoring and analytics
+
+Accessibility
+- Improve screen reader support
+- Add high contrast mode support
+- Ensure all interactive elements are keyboard accessible
+- Add text scaling support for better readability
+
+Offline Features
+- Add offline map integration
+- Cache country images for offline viewing
+- Implement sync mechanism for favorites across devices
+- Add offline search functionality
+
+Data Visualization
+- Add charts and graphs for country statistics
+- Create visual comparisons for population, area, etc.
+- Implement timeline view for country data changes
+- Add interactive maps showing country locations
+
+Developer Experience
+- Add comprehensive API documentation
+- Create developer guide for extending features
+- Implement CI/CD pipeline for automated testing and deployment
+- Add code quality checks and automated formatting
 

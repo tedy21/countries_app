@@ -4,12 +4,10 @@ import 'package:dio_cache_interceptor_hive_store/dio_cache_interceptor_hive_stor
 import 'package:path_provider/path_provider.dart';
 import '../errors/exceptions.dart';
 import '../utils/logger.dart';
-import '../utils/connectivity_checker.dart';
 
 class DioClient {
   late final Dio _dio;
   CacheOptions? _cacheOptions;
-  final ConnectivityChecker _connectivityChecker = ConnectivityChecker();
 
   DioClient() {
     _dio = Dio(
@@ -93,16 +91,10 @@ class DioClient {
         options: options,
       );
 
-      if (response.statusCode == 200 || response.statusCode == 304) {
-        final hasInternet = await _connectivityChecker.hasInternetConnection();
-        if (!hasInternet && response.statusCode == 200) {
-          Logger.info('Cache served offline: ${response.requestOptions.path}');
-        }
-      }
-
       return response;
     } on DioException catch (e) {
-      final hasInternetNow = await _connectivityChecker.hasInternetConnection();
+      // Don't check connectivity in release builds as it can be unreliable
+      // Let the actual error type determine if it's a network issue
 
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout ||
@@ -112,15 +104,10 @@ class DioClient {
           isNoInternet: false,
         );
       } else if (e.type == DioExceptionType.connectionError) {
-        if (!hasInternetNow) {
-          throw NetworkException(
-            'No internet connection and no cached data available',
-            isNoInternet: true,
-          );
-        }
+        // Connection error usually means no internet
         throw NetworkException(
-          'Connection error',
-          isNoInternet: false,
+          'No internet connection and no cached data available',
+          isNoInternet: true,
         );
       } else if (e.type == DioExceptionType.badResponse) {
         final statusCode = e.response?.statusCode;
@@ -129,15 +116,15 @@ class DioClient {
           statusCode,
         );
       } else {
-        if (!hasInternetNow) {
-          throw NetworkException(
-            'No internet connection and no cached data available',
-            isNoInternet: true,
-          );
-        }
+        // For other errors, check if it's likely a network issue
+        final isLikelyNoInternet =
+            e.message?.toLowerCase().contains('network') == true ||
+                e.message?.toLowerCase().contains('socket') == true ||
+                e.message?.toLowerCase().contains('failed host lookup') == true;
+
         throw NetworkException(
           e.message ?? 'Network error',
-          isNoInternet: false,
+          isNoInternet: isLikelyNoInternet,
         );
       }
     } on NetworkException {
