@@ -54,4 +54,7 @@ class AppStrings {
       'Failed to load cached data. Please check your connection.';
   static const String favoritesPartialLoad =
       'Some favorites could not be loaded. Showing cached data.';
+
+  static const String sortBy = 'Sort by';
+  static const String sortNone = 'None';
 }

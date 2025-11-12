@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/utils/logger.dart';
 import 'favorite_local_data_source.dart';
 
 class FavoriteLocalDataSourceImpl implements FavoriteLocalDataSource {
@@ -25,7 +26,7 @@ class FavoriteLocalDataSourceImpl implements FavoriteLocalDataSource {
         await prefs.setStringList(_favoritesKey, favorites);
       }
     } catch (e) {
-      // TODO: Handle error - log or throw exception
+      Logger.error('Failed to add favorite country: $countryCode', e);
     }
   }
 
@@ -37,7 +38,7 @@ class FavoriteLocalDataSourceImpl implements FavoriteLocalDataSource {
       favorites.remove(countryCode);
       await prefs.setStringList(_favoritesKey, favorites);
     } catch (e) {
-      // TODO: Handle error - log or throw exception
+      Logger.error('Failed to remove favorite country: $countryCode', e);
     }
   }
 

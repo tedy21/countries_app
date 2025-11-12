@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/logger.dart';
 import 'theme_event.dart';
 import 'theme_state.dart';
 
@@ -84,7 +85,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
       }
       await prefs.setString(_themeKey, themeModeString);
     } catch (e) {
-      // TODO: Handle error - log or show notification
+      Logger.error('Failed to save theme preference', e);
     }
   }
 }

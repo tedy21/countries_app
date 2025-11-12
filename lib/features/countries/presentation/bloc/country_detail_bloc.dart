@@ -23,7 +23,7 @@ class CountryDetailBloc extends Bloc<CountryDetailEvent, CountryDetailState> {
       final country = await repository.getCountryDetails(event.cca2);
       emit(CountryDetailLoaded(country: country));
     } on Failure catch (failure) {
-      emit(CountryDetailError(failure.message));
+      emit(CountryDetailError(failure.displayMessage));
     }
   }
 
@@ -37,7 +37,7 @@ class CountryDetailBloc extends Bloc<CountryDetailEvent, CountryDetailState> {
       final country = await repository.getCountryDetails(event.cca2);
       emit(CountryDetailLoaded(country: country));
     } on Failure catch (failure) {
-      emit(CountryDetailError(failure.message));
+      emit(CountryDetailError(failure.displayMessage));
     }
   }
 }

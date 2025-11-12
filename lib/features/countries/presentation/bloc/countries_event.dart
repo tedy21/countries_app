@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../models/sort_type.dart';
 
 abstract class CountriesEvent extends Equatable {
   const CountriesEvent();
@@ -31,4 +32,13 @@ class ToggleFavorite extends CountriesEvent {
 
   @override
   List<Object> get props => [cca2];
+}
+
+class SortCountries extends CountriesEvent {
+  final SortType sortType;
+
+  const SortCountries(this.sortType);
+
+  @override
+  List<Object> get props => [sortType];
 }

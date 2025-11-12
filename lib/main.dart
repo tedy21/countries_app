@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/constants/app_strings.dart';
-import 'core/injection/injection_container.dart';
+import 'core/injection/service_locator.dart';
+import 'features/countries/domain/repositories/countries_repository.dart';
+import 'features/favorites/domain/repositories/favorites_repository.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_bloc.dart';
 import 'core/theme/theme_event.dart';
@@ -12,7 +14,7 @@ import 'features/countries/presentation/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await InjectionContainer().init();
+  await setupServiceLocator();
   runApp(const MyApp());
 }
 
@@ -21,7 +23,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final injectionContainer = InjectionContainer();
     return BlocProvider(
       create: (context) => ThemeBloc()..add(const LoadTheme()),
       child: ThemeListener(
@@ -35,8 +36,8 @@ class MyApp extends StatelessWidget {
               themeMode: themeState.themeMode,
               home: BlocProvider(
                 create: (context) => CountriesBloc(
-                  repository: injectionContainer.countriesRepository,
-                  favoritesRepository: injectionContainer.favoritesRepository,
+                  repository: getIt<CountriesRepository>(),
+                  favoritesRepository: getIt<FavoritesRepository>(),
                 ),
                 child: const HomePage(),
               ),

@@ -25,22 +25,30 @@ class CountriesRemoteDataSourceImpl implements CountriesRemoteDataSource {
         },
       );
 
-      if (response.statusCode == 200) {
-        if (response.data is List) {
-          final List<dynamic> data = response.data as List<dynamic>;
+      if (response.statusCode == 200 || response.statusCode == 304) {
+        dynamic responseData = response.data;
+
+        if (responseData == null) {
+          throw ServerException('No data received from server');
+        }
+
+        if (responseData is List) {
+          final data = responseData;
           return data
               .whereType<Map<String, dynamic>>()
               .map((json) => CountrySummaryDto.fromJson(json))
               .toList();
-        } else if (response.data is Map) {
-          final Map<String, dynamic> data =
-              response.data as Map<String, dynamic>;
+        } else if (responseData is Map) {
+          final data = Map<String, dynamic>.from(responseData);
           return [CountrySummaryDto.fromJson(data)];
         } else {
           throw ServerException('Invalid response format');
         }
       } else {
-        throw ServerException('Failed to load countries');
+        throw ServerException(
+          'Failed to load countries',
+          response.statusCode,
+        );
       }
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
@@ -118,24 +126,34 @@ class CountriesRemoteDataSourceImpl implements CountriesRemoteDataSource {
         },
       );
 
-      if (response.statusCode == 200) {
-        if (response.data is List) {
-          final List<dynamic> data = response.data as List<dynamic>;
+      if (response.statusCode == 200 || response.statusCode == 304) {
+        dynamic responseData = response.data;
+
+        if (responseData == null) {
+          throw ServerException('No data received from server');
+        }
+
+        if (responseData is List) {
+          final data = responseData;
           final firstItem = data.isNotEmpty ? data[0] : null;
-          if (firstItem is Map<String, dynamic>) {
-            return CountryDetailsDto.fromJson(firstItem);
+          if (firstItem is Map) {
+            return CountryDetailsDto.fromJson(
+              Map<String, dynamic>.from(firstItem),
+            );
           } else {
             throw ServerException('Country not found');
           }
-        } else if (response.data is Map) {
-          final Map<String, dynamic> data =
-              response.data as Map<String, dynamic>;
+        } else if (responseData is Map) {
+          final data = Map<String, dynamic>.from(responseData);
           return CountryDetailsDto.fromJson(data);
         } else {
           throw ServerException('Invalid response format');
         }
       } else {
-        throw ServerException('Failed to load country details');
+        throw ServerException(
+          'Failed to load country details',
+          response.statusCode,
+        );
       }
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||

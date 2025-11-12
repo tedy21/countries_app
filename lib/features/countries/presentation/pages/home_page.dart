@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/debouncer.dart';
 import '../../../../widgets/error_view.dart';
 import '../../../../widgets/empty_state_widget.dart';
 import '../../../../core/widgets/theme_toggle_button.dart';
@@ -10,8 +11,70 @@ import '../bloc/countries_event.dart';
 import '../bloc/countries_state.dart';
 import '../widgets/country_list_item.dart';
 import '../widgets/country_list_shimmer.dart';
+import '../models/sort_type.dart';
 import 'country_detail_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
+
+class _FilterButton extends StatelessWidget {
+  final SortType currentSortType;
+  final ValueChanged<SortType> onSortChanged;
+
+  const _FilterButton({
+    required this.currentSortType,
+    required this.onSortChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return PopupMenuButton<SortType>(
+      icon: Icon(
+        Icons.filter_list,
+        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+        size: 24,
+      ),
+      tooltip: 'Sort',
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSizes.radiusM),
+      ),
+      color: Colors.white,
+      onSelected: onSortChanged,
+      itemBuilder: (context) {
+        return SortType.values.map((sortType) {
+          return PopupMenuItem<SortType>(
+            value: sortType,
+            child: Row(
+              children: [
+                if (currentSortType == sortType)
+                  Icon(
+                    Icons.check,
+                    size: 18,
+                    color: theme.colorScheme.primary,
+                  )
+                else
+                  const SizedBox(width: 18),
+                if (currentSortType == sortType)
+                  const SizedBox(width: AppSizes.spacingS),
+                Text(
+                  sortType.displayName,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: currentSortType == sortType
+                        ? theme.colorScheme.primary
+                        : Colors.black87,
+                    fontWeight: currentSortType == sortType
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList();
+      },
+    );
+  }
+}
 
 class _SearchTextField extends StatefulWidget {
   final String initialValue;
@@ -30,6 +93,7 @@ class _SearchTextField extends StatefulWidget {
 
 class _SearchTextFieldState extends State<_SearchTextField> {
   late final TextEditingController _controller;
+  late final Debouncer _debouncer;
   bool _hasText = false;
 
   @override
@@ -37,6 +101,7 @@ class _SearchTextFieldState extends State<_SearchTextField> {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue);
     _hasText = widget.initialValue.isNotEmpty;
+    _debouncer = Debouncer(delay: const Duration(milliseconds: 500));
     _controller.addListener(() {
       final hasText = _controller.text.isNotEmpty;
       if (_hasText != hasText) {
@@ -44,6 +109,9 @@ class _SearchTextFieldState extends State<_SearchTextField> {
           _hasText = hasText;
         });
       }
+      _debouncer.call(() {
+        widget.onChanged(_controller.text);
+      });
     });
   }
 
@@ -62,6 +130,7 @@ class _SearchTextFieldState extends State<_SearchTextField> {
 
   @override
   void dispose() {
+    _debouncer.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -170,26 +239,67 @@ class HomePage extends StatelessWidget {
                     );
                   }
 
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      context
-                          .read<CountriesBloc>()
-                          .add(const RefreshCountries());
-                    },
-                    child: ListView.separated(
-                      itemCount: state.countries.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox.shrink(),
-                      itemBuilder: (context, index) {
-                        final country = state.countries[index];
-                        return CountryListItem(
-                          country: country,
-                          onTap: () => _onCountryTap(context, country.cca2),
-                          onFavoriteToggle: () =>
-                              _onFavoriteToggle(context, country.cca2),
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isTablet = constraints.maxWidth > 600;
+                      final crossAxisCount = isTablet
+                          ? (constraints.maxWidth / 400).floor().clamp(2, 4)
+                          : 1;
+
+                      if (isTablet) {
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            context
+                                .read<CountriesBloc>()
+                                .add(const RefreshCountries());
+                          },
+                          child: GridView.builder(
+                            padding: const EdgeInsets.all(AppSizes.paddingM),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              crossAxisSpacing: AppSizes.spacingM,
+                              mainAxisSpacing: AppSizes.spacingM,
+                              childAspectRatio: 2.5,
+                            ),
+                            itemCount: state.countries.length,
+                            itemBuilder: (context, index) {
+                              final country = state.countries[index];
+                              return CountryListItem(
+                                country: country,
+                                onTap: () =>
+                                    _onCountryTap(context, country.cca2),
+                                onFavoriteToggle: () =>
+                                    _onFavoriteToggle(context, country.cca2),
+                              );
+                            },
+                          ),
                         );
-                      },
-                    ),
+                      } else {
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            context
+                                .read<CountriesBloc>()
+                                .add(const RefreshCountries());
+                          },
+                          child: ListView.separated(
+                            itemCount: state.countries.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox.shrink(),
+                            itemBuilder: (context, index) {
+                              final country = state.countries[index];
+                              return CountryListItem(
+                                country: country,
+                                onTap: () =>
+                                    _onCountryTap(context, country.cca2),
+                                onFavoriteToggle: () =>
+                                    _onFavoriteToggle(context, country.cca2),
+                              );
+                            },
+                          ),
+                        );
+                      }
+                    },
                   );
                 }
 
@@ -208,20 +318,42 @@ class HomePage extends StatelessWidget {
     return BlocBuilder<CountriesBloc, CountriesState>(
       builder: (context, state) {
         final searchQuery = state is CountriesLoaded ? state.searchQuery : '';
+        final currentSortType =
+            state is CountriesLoaded ? state.sortType : SortType.nameAscending;
+        final showFilter =
+            state is CountriesLoaded && state.countries.isNotEmpty;
+
         return Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSizes.paddingM,
             vertical: AppSizes.paddingS,
           ),
           color: theme.cardColor,
-          child: _SearchTextField(
-            initialValue: searchQuery,
-            onChanged: (query) {
-              context.read<CountriesBloc>().add(SearchCountries(query));
-            },
-            onClear: () {
-              context.read<CountriesBloc>().add(const SearchCountries(''));
-            },
+          child: Row(
+            children: [
+              Expanded(
+                child: _SearchTextField(
+                  initialValue: searchQuery,
+                  onChanged: (query) {
+                    context.read<CountriesBloc>().add(SearchCountries(query));
+                  },
+                  onClear: () {
+                    context
+                        .read<CountriesBloc>()
+                        .add(const SearchCountries(''));
+                  },
+                ),
+              ),
+              if (showFilter) ...[
+                const SizedBox(width: AppSizes.spacingS),
+                _FilterButton(
+                  currentSortType: currentSortType,
+                  onSortChanged: (sortType) {
+                    context.read<CountriesBloc>().add(SortCountries(sortType));
+                  },
+                ),
+              ],
+            ],
           ),
         );
       },

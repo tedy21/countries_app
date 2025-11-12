@@ -1,5 +1,7 @@
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/error_mapper.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../domain/repositories/countries_repository.dart';
 import '../../domain/entities/country_summary.dart';
 import '../../domain/entities/country_details.dart';
@@ -18,11 +20,18 @@ class CountriesRepositoryImpl implements CountriesRepository {
       final dtos = await remoteDataSource.getAllCountries();
       return dtos.map((dto) => _mapSummaryDtoToEntity(dto)).toList();
     } on ServerException catch (e) {
-      throw ServerFailure(e.message);
+      throw ErrorMapper.mapExceptionToFailure(e);
     } on NetworkException catch (e) {
-      throw NetworkFailure(e.message);
+      throw ErrorMapper.mapExceptionToFailure(e);
+    } on CacheException catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    } on Exception catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
     } catch (e) {
-      throw UnknownFailure('Unknown error: $e');
+      throw UnknownFailure(
+        'Unknown error: $e',
+        userMessage: AppStrings.errorUnknown,
+      );
     }
   }
 
@@ -32,11 +41,18 @@ class CountriesRepositoryImpl implements CountriesRepository {
       final dtos = await remoteDataSource.searchCountriesByName(name);
       return dtos.map((dto) => _mapSummaryDtoToEntity(dto)).toList();
     } on ServerException catch (e) {
-      throw ServerFailure(e.message);
+      throw ErrorMapper.mapExceptionToFailure(e);
     } on NetworkException catch (e) {
-      throw NetworkFailure(e.message);
+      throw ErrorMapper.mapExceptionToFailure(e);
+    } on CacheException catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    } on Exception catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
     } catch (e) {
-      throw UnknownFailure('Unknown error: $e');
+      throw UnknownFailure(
+        'Unknown error: $e',
+        userMessage: AppStrings.errorUnknown,
+      );
     }
   }
 
@@ -46,11 +62,18 @@ class CountriesRepositoryImpl implements CountriesRepository {
       final dto = await remoteDataSource.getCountryDetails(cca2);
       return _mapDetailsDtoToEntity(dto);
     } on ServerException catch (e) {
-      throw ServerFailure(e.message);
+      throw ErrorMapper.mapExceptionToFailure(e);
     } on NetworkException catch (e) {
-      throw NetworkFailure(e.message);
+      throw ErrorMapper.mapExceptionToFailure(e);
+    } on CacheException catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
+    } on Exception catch (e) {
+      throw ErrorMapper.mapExceptionToFailure(e);
     } catch (e) {
-      throw UnknownFailure('Unknown error: $e');
+      throw UnknownFailure(
+        'Unknown error: $e',
+        userMessage: AppStrings.errorUnknown,
+      );
     }
   }
 

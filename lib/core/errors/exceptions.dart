@@ -1,13 +1,15 @@
 class ServerException implements Exception {
   final String message;
+  final int? statusCode;
 
-  ServerException(this.message);
+  ServerException(this.message, [this.statusCode]);
 }
 
 class NetworkException implements Exception {
   final String message;
+  final bool isNoInternet;
 
-  NetworkException(this.message);
+  NetworkException(this.message, {this.isNoInternet = false});
 }
 
 class CacheException implements Exception {

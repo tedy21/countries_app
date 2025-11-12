@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../../core/utils/logger.dart';
 import '../../domain/repositories/countries_repository.dart';
 import '../../../favorites/domain/repositories/favorites_repository.dart';
 import '../../domain/entities/country_summary.dart';
+import '../models/sort_type.dart';
 import 'countries_event.dart';
 import 'countries_state.dart';
 
@@ -19,6 +21,7 @@ class CountriesBloc extends Bloc<CountriesEvent, CountriesState> {
     on<SearchCountries>(_onSearchCountries);
     on<RefreshCountries>(_onRefreshCountries);
     on<ToggleFavorite>(_onToggleFavorite);
+    on<SortCountries>(_onSortCountries);
   }
 
   Future<void> _onLoadCountries(
@@ -32,9 +35,13 @@ class CountriesBloc extends Bloc<CountriesEvent, CountriesState> {
       final favoriteStatusMap = await _getFavoriteStatusMap(countries);
       _allCountries =
           _updateCountriesWithFavorites(countries, favoriteStatusMap);
-      emit(CountriesLoaded(countries: _allCountries));
+      final sorted = _applySort(_allCountries, SortType.nameAscending);
+      emit(CountriesLoaded(
+        countries: sorted,
+        sortType: SortType.nameAscending,
+      ));
     } on Failure catch (failure) {
-      emit(CountriesError(failure.message));
+      emit(CountriesError(failure.displayMessage));
     }
   }
 
@@ -45,8 +52,15 @@ class CountriesBloc extends Bloc<CountriesEvent, CountriesState> {
     if (state is CountriesLoaded) {
       final query = event.query.toLowerCase();
 
+      final currentState = state as CountriesLoaded;
+
       if (query.isEmpty) {
-        emit(CountriesLoaded(countries: _allCountries, searchQuery: ''));
+        final sorted = _applySort(_allCountries, currentState.sortType);
+        emit(CountriesLoaded(
+          countries: sorted,
+          searchQuery: '',
+          sortType: currentState.sortType,
+        ));
         return;
       }
 
@@ -54,9 +68,12 @@ class CountriesBloc extends Bloc<CountriesEvent, CountriesState> {
           .where((country) => country.name.toLowerCase().contains(query))
           .toList();
 
+      final sorted = _applySort(filtered, currentState.sortType);
+
       emit(CountriesLoaded(
-        countries: filtered,
+        countries: sorted,
         searchQuery: event.query,
+        sortType: currentState.sortType,
       ));
     }
   }
@@ -72,9 +89,13 @@ class CountriesBloc extends Bloc<CountriesEvent, CountriesState> {
       final favoriteStatusMap = await _getFavoriteStatusMap(countries);
       _allCountries =
           _updateCountriesWithFavorites(countries, favoriteStatusMap);
-      emit(CountriesLoaded(countries: _allCountries));
+      final sorted = _applySort(_allCountries, SortType.nameAscending);
+      emit(CountriesLoaded(
+        countries: sorted,
+        sortType: SortType.nameAscending,
+      ));
     } on Failure catch (failure) {
-      emit(CountriesError(failure.message));
+      emit(CountriesError(failure.displayMessage));
     }
   }
 
@@ -115,10 +136,10 @@ class CountriesBloc extends Bloc<CountriesEvent, CountriesState> {
         emit(CountriesLoaded(
           countries: updatedCountries,
           searchQuery: currentState.searchQuery,
+          sortType: currentState.sortType,
         ));
       } catch (e) {
-        // TODO: Handle error - show snackbar or toast
-        // For now, silently fail to maintain UX
+        Logger.error('Failed to toggle favorite for ${event.cca2}', e);
       }
     }
   }
@@ -141,5 +162,43 @@ class CountriesBloc extends Bloc<CountriesEvent, CountriesState> {
       final isFavorite = favoriteStatusMap[country.cca2] ?? false;
       return country.copyWith(isFavorite: isFavorite);
     }).toList();
+  }
+
+  Future<void> _onSortCountries(
+    SortCountries event,
+    Emitter<CountriesState> emit,
+  ) async {
+    if (state is CountriesLoaded) {
+      final currentState = state as CountriesLoaded;
+      final sorted = _applySort(currentState.countries, event.sortType);
+
+      emit(CountriesLoaded(
+        countries: sorted,
+        searchQuery: currentState.searchQuery,
+        sortType: event.sortType,
+      ));
+    }
+  }
+
+  List<CountrySummary> _applySort(
+    List<CountrySummary> countries,
+    SortType sortType,
+  ) {
+    final sorted = List<CountrySummary>.from(countries);
+
+    switch (sortType) {
+      case SortType.nameAscending:
+        sorted.sort((a, b) => a.name.compareTo(b.name));
+        return sorted;
+      case SortType.nameDescending:
+        sorted.sort((a, b) => b.name.compareTo(a.name));
+        return sorted;
+      case SortType.populationAscending:
+        sorted.sort((a, b) => a.population.compareTo(b.population));
+        return sorted;
+      case SortType.populationDescending:
+        sorted.sort((a, b) => b.population.compareTo(a.population));
+        return sorted;
+    }
   }
 }

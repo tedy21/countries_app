@@ -110,26 +110,67 @@ class FavoritesPage extends StatelessWidget {
                       ),
                     ),
                   Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        context
-                            .read<FavoritesBloc>()
-                            .add(const RefreshFavorites());
-                      },
-                      child: ListView.separated(
-                        itemCount: state.favorites.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox.shrink(),
-                        itemBuilder: (context, index) {
-                          final country = state.favorites[index];
-                          return FavoriteListItem(
-                            country: country,
-                            onTap: () => _onCountryTap(context, country.cca2),
-                            onRemoveFavorite: () =>
-                                _onRemoveFavorite(context, country.cca2),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isTablet = constraints.maxWidth > 600;
+                        final crossAxisCount = isTablet
+                            ? (constraints.maxWidth / 400).floor().clamp(2, 4)
+                            : 1;
+
+                        if (isTablet) {
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              context
+                                  .read<FavoritesBloc>()
+                                  .add(const RefreshFavorites());
+                            },
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(AppSizes.paddingM),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: AppSizes.spacingM,
+                                mainAxisSpacing: AppSizes.spacingM,
+                                childAspectRatio: 2.5,
+                              ),
+                              itemCount: state.favorites.length,
+                              itemBuilder: (context, index) {
+                                final country = state.favorites[index];
+                                return FavoriteListItem(
+                                  country: country,
+                                  onTap: () =>
+                                      _onCountryTap(context, country.cca2),
+                                  onRemoveFavorite: () =>
+                                      _onRemoveFavorite(context, country.cca2),
+                                );
+                              },
+                            ),
                           );
-                        },
-                      ),
+                        } else {
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              context
+                                  .read<FavoritesBloc>()
+                                  .add(const RefreshFavorites());
+                            },
+                            child: ListView.separated(
+                              itemCount: state.favorites.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox.shrink(),
+                              itemBuilder: (context, index) {
+                                final country = state.favorites[index];
+                                return FavoriteListItem(
+                                  country: country,
+                                  onTap: () =>
+                                      _onCountryTap(context, country.cca2),
+                                  onRemoveFavorite: () =>
+                                      _onRemoveFavorite(context, country.cca2),
+                                );
+                              },
+                            ),
+                          );
+                        }
+                      },
                     ),
                   ),
                 ],
