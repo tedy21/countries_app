@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../widgets/error_view.dart';
 import '../../../../widgets/empty_state_widget.dart';
+import '../../../../core/widgets/theme_toggle_button.dart';
 import '../bloc/countries_bloc.dart';
 import '../bloc/countries_event.dart';
 import '../bloc/countries_state.dart';
@@ -73,20 +73,23 @@ class _SearchTextFieldState extends State<_SearchTextField> {
       onChanged: widget.onChanged,
       decoration: InputDecoration(
         hintText: 'Search for a country',
-        hintStyle: const TextStyle(
-          color: AppColors.textHint,
+        hintStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
           fontSize: 14,
         ),
-        prefixIcon: const Icon(
+        prefixIcon: Icon(
           Icons.search,
-          color: AppColors.textSecondary,
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
           size: 20,
         ),
         suffixIcon: _hasText
             ? IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.clear,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
                   size: 20,
                 ),
                 onPressed: () {
@@ -96,7 +99,6 @@ class _SearchTextFieldState extends State<_SearchTextField> {
               )
             : null,
         filled: true,
-        fillColor: AppColors.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSizes.radiusM),
           borderSide: BorderSide.none,
@@ -116,21 +118,20 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
           AppStrings.countries,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
           ),
         ),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
+        actions: const [
+          ThemeToggleButton(),
+        ],
       ),
       body: Column(
         children: [
@@ -203,6 +204,7 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildSearchBar(BuildContext context) {
+    final theme = Theme.of(context);
     return BlocBuilder<CountriesBloc, CountriesState>(
       builder: (context, state) {
         final searchQuery = state is CountriesLoaded ? state.searchQuery : '';
@@ -211,7 +213,7 @@ class HomePage extends StatelessWidget {
             horizontal: AppSizes.paddingM,
             vertical: AppSizes.paddingS,
           ),
-          color: AppColors.surface,
+          color: theme.cardColor,
           child: _SearchTextField(
             initialValue: searchQuery,
             onChanged: (query) {
@@ -239,11 +241,12 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: AppColors.border,
+            color: theme.dividerColor,
             width: 0.5,
           ),
         ),
@@ -272,10 +275,6 @@ class HomePage extends StatelessWidget {
             label: 'Favorites',
           ),
         ],
-        selectedItemColor: AppColors.textPrimary,
-        unselectedItemColor: AppColors.textSecondary,
-        backgroundColor: AppColors.surface,
-        elevation: 0,
         selectedFontSize: 12,
         unselectedFontSize: 12,
       ),

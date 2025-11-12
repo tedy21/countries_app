@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/injection/injection_container.dart';
+import '../../../../core/widgets/theme_toggle_button.dart';
 import '../../../../widgets/error_view.dart';
 import '../../../../widgets/empty_state_widget.dart';
 import '../../../countries/presentation/pages/country_detail_page.dart';
@@ -23,21 +23,20 @@ class FavoritesPage extends StatelessWidget {
         countriesRepository: injectionContainer.countriesRepository,
       )..add(const LoadFavorites()),
       child: Scaffold(
-        backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text(
             AppStrings.favorites,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
             ),
           ),
-          backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.textPrimary,
           elevation: 0,
           centerTitle: true,
           automaticallyImplyLeading: false,
+          actions: const [
+            ThemeToggleButton(),
+          ],
         ),
         body: BlocBuilder<FavoritesBloc, FavoritesState>(
           buildWhen: (previous, current) {
@@ -117,11 +116,12 @@ class FavoritesPage extends StatelessWidget {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: AppColors.border,
+            color: theme.dividerColor,
             width: 0.5,
           ),
         ),
@@ -146,10 +146,6 @@ class FavoritesPage extends StatelessWidget {
             label: 'Favorites',
           ),
         ],
-        selectedItemColor: AppColors.textPrimary,
-        unselectedItemColor: AppColors.textSecondary,
-        backgroundColor: AppColors.surface,
-        elevation: 0,
         selectedFontSize: 12,
         unselectedFontSize: 12,
       ),

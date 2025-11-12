@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../countries/domain/entities/country_details.dart';
 
@@ -17,14 +16,15 @@ class FavoriteListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final capital = country.capital.isNotEmpty ? country.capital.first : 'N/A';
 
     return Material(
-      color: AppColors.surface,
+      color: theme.cardColor,
       child: InkWell(
         onTap: onTap,
-        splashColor: AppColors.primary.withValues(alpha: 0.1),
-        highlightColor: AppColors.primary.withValues(alpha: 0.05),
+        splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.05),
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSizes.paddingM,
@@ -47,15 +47,16 @@ class FavoriteListItem extends StatelessWidget {
                     return Container(
                       width: 60,
                       height: 40,
-                      color: AppColors.border,
-                      child: const Center(
+                      color: theme.dividerColor,
+                      child: Center(
                         child: SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.textHint,
+                              theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.5),
                             ),
                           ),
                         ),
@@ -66,10 +67,11 @@ class FavoriteListItem extends StatelessWidget {
                     return Container(
                       width: 60,
                       height: 40,
-                      color: AppColors.border,
-                      child: const Icon(
+                      color: theme.dividerColor,
+                      child: Icon(
                         Icons.flag,
-                        color: AppColors.textHint,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         size: 20,
                       ),
                     );
@@ -84,10 +86,10 @@ class FavoriteListItem extends StatelessWidget {
                   children: [
                     Text(
                       country.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: theme.colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -95,9 +97,10 @@ class FavoriteListItem extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Capital: $capital',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -108,9 +111,9 @@ class FavoriteListItem extends StatelessWidget {
               const SizedBox(width: AppSizes.spacingS),
               IconButton(
                 onPressed: onRemoveFavorite,
-                icon: const Icon(
+                icon: Icon(
                   Icons.favorite,
-                  color: AppColors.primary,
+                  color: theme.colorScheme.primary,
                 ),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(

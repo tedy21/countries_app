@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'core/constants/app_colors.dart';
 import 'core/constants/app_strings.dart';
 import 'core/injection/injection_container.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_bloc.dart';
+import 'core/theme/theme_event.dart';
+import 'core/theme/theme_state.dart';
+import 'core/widgets/theme_listener.dart';
 import 'features/countries/presentation/bloc/countries_bloc.dart';
 import 'features/countries/presentation/pages/home_page.dart';
 
@@ -18,28 +22,27 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final injectionContainer = InjectionContainer();
-    return MaterialApp(
-      title: AppStrings.appName,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          brightness: Brightness.light,
+    return BlocProvider(
+      create: (context) => ThemeBloc()..add(const LoadTheme()),
+      child: ThemeListener(
+        child: BlocBuilder<ThemeBloc, ThemeState>(
+          builder: (context, themeState) {
+            return MaterialApp(
+              title: AppStrings.appName,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: themeState.themeMode,
+              home: BlocProvider(
+                create: (context) => CountriesBloc(
+                  repository: injectionContainer.countriesRepository,
+                  favoritesRepository: injectionContainer.favoritesRepository,
+                ),
+                child: const HomePage(),
+              ),
+            );
+          },
         ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: AppColors.background,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.textPrimary,
-          elevation: 0,
-        ),
-      ),
-      home: BlocProvider(
-        create: (context) => CountriesBloc(
-          repository: injectionContainer.countriesRepository,
-          favoritesRepository: injectionContainer.favoritesRepository,
-        ),
-        child: const HomePage(),
       ),
     );
   }

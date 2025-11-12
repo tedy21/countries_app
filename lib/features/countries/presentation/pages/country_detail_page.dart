@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_sizes.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/number_formatter.dart';
 import '../../../../core/injection/injection_container.dart';
+import '../../../../core/widgets/theme_toggle_button.dart';
 import '../../../../widgets/error_view.dart';
 import '../../../../widgets/app_loader.dart';
 import '../bloc/country_detail_bloc.dart';
@@ -28,7 +28,6 @@ class CountryDetailPage extends StatelessWidget {
       create: (context) => CountryDetailBloc(repository: repository)
         ..add(LoadCountryDetail(cca2)),
       child: Scaffold(
-        backgroundColor: AppColors.background,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -42,17 +41,17 @@ class CountryDetailPage extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
                   ),
                 );
               }
               return const SizedBox.shrink();
             },
           ),
-          backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.textPrimary,
           elevation: 0,
           centerTitle: true,
+          actions: const [
+            ThemeToggleButton(),
+          ],
         ),
         body: BlocBuilder<CountryDetailBloc, CountryDetailState>(
           builder: (context, state) {
@@ -87,15 +86,15 @@ class CountryDetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFlagSection(country.flag),
+          _buildFlagSection(context, country.flag, country.cca2),
           Padding(
             padding: const EdgeInsets.all(AppSizes.paddingM),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildKeyStatistics(country),
+                _buildKeyStatistics(context, country),
                 const SizedBox(height: AppSizes.spacingXL),
-                _buildTimezoneSection(country.timezones),
+                _buildTimezoneSection(context, country.timezones),
               ],
             ),
           ),
@@ -104,65 +103,73 @@ class CountryDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildFlagSection(String flagUrl) {
-    return Container(
-      width: double.infinity,
-      height: 250,
-      color: AppColors.border,
-      child: Image.network(
-        flagUrl,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const Center(
-            child: AppLoader(),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: AppColors.border,
-            child: const Center(
-              child: Icon(
-                Icons.flag,
-                size: 64,
-                color: AppColors.textHint,
+  Widget _buildFlagSection(BuildContext context, String flagUrl, String cca2) {
+    final theme = Theme.of(context);
+    return Hero(
+      tag: 'country_flag_$cca2',
+      child: Container(
+        width: double.infinity,
+        height: 250,
+        color: theme.dividerColor,
+        child: Image.network(
+          flagUrl,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const Center(
+              child: AppLoader(),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: theme.dividerColor,
+              child: Center(
+                child: Icon(
+                  Icons.flag,
+                  size: 64,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildKeyStatistics(CountryDetails country) {
+  Widget _buildKeyStatistics(BuildContext context, CountryDetails country) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Key Statistics',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: AppSizes.spacingM),
         _buildStatRow(
+            context,
             'Area',
             country.area != null
                 ? '${NumberFormatter.formatNumber(country.area!.toInt())} sq km'
                 : 'N/A'),
         _buildStatRow(
+          context,
           AppStrings.population,
           NumberFormatter.formatNumber(country.population),
         ),
-        _buildStatRow(AppStrings.region, country.region),
-        _buildStatRow(AppStrings.subregion, country.subregion),
+        _buildStatRow(context, AppStrings.region, country.region),
+        _buildStatRow(context, AppStrings.subregion, country.subregion),
       ],
     );
   }
 
-  Widget _buildStatRow(String label, String value) {
+  Widget _buildStatRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.spacingS),
       child: Row(
@@ -170,17 +177,17 @@ class CountryDetailPage extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
-              color: AppColors.textSecondary,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: theme.colorScheme.onSurface,
             ),
           ),
         ],
@@ -188,16 +195,17 @@ class CountryDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimezoneSection(List<String> timezones) {
+  Widget _buildTimezoneSection(BuildContext context, List<String> timezones) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Timezone',
+        Text(
+          'Timezones',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: AppSizes.spacingM),
@@ -205,34 +213,22 @@ class CountryDetailPage extends StatelessWidget {
           spacing: AppSizes.spacingS,
           runSpacing: AppSizes.spacingS,
           children: timezones.map((timezone) {
-            return _buildTimezoneButton(timezone);
+            return _buildTimezoneChip(context, timezone);
           }).toList(),
         ),
       ],
     );
   }
 
-  Widget _buildTimezoneButton(String timezone) {
-    final displayText = timezone.replaceAll('UTC', 'UTC');
-    return Container(
+  Widget _buildTimezoneChip(BuildContext context, String timezone) {
+    final theme = Theme.of(context);
+    return Chip(
+      label: Text(timezone),
+      backgroundColor: theme.colorScheme.primaryContainer,
+      labelStyle: TextStyle(color: theme.colorScheme.onPrimaryContainer),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.paddingM,
-        vertical: AppSizes.paddingS,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(AppSizes.radiusM),
-        border: Border.all(
-          color: AppColors.border,
-          width: 1,
-        ),
-      ),
-      child: Text(
-        displayText,
-        style: const TextStyle(
-          fontSize: 14,
-          color: AppColors.textPrimary,
-        ),
+        horizontal: AppSizes.paddingS,
+        vertical: AppSizes.paddingXS,
       ),
     );
   }
